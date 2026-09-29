@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 350px;
+        }
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .switch-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .switch-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .switch-link a:hover {
+            text-decoration: underline;
+        }
+        #msg {
+            margin-top: 15px;
+            text-align: center;
+        }
+        #msg.error { color: #c00; }
+        #msg.ok { color: #080; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Вход в систему</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="example@mail.ru" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введите пароль" required>
+            </div>
+            <button type="submit">Войти</button>
+        </form>
+        <div id="msg"></div>
+        <div class="switch-link">
+            Нет аккаунта? <a href="/">Зарегистрироваться</a>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('msg');
+
+        msg.className = '';
+        msg.textContent = '';
+
+        if (!email || !password) {
+            msg.className = 'error';
+            msg.textContent = 'Заполните все поля';
+            return;
+        }
+
+        try {
+            const res = await fetch('/user_login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+
+            if (data.result) {
+                msg.className = 'ok';
+                msg.textContent = 'Успешный вход!';
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/welcome';
+                }, 500);
+            } else {
+                msg.className = 'error';
+                msg.textContent = data.error || 'Неверный email или пароль';
+            }
+        } catch (err) {
+            msg.className = 'error';
+            msg.textContent = 'Сервер недоступен: ' + err.message;
+        }
+    });
+    </script>
+</body>
+</html>
