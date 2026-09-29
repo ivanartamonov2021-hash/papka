@@ -70,10 +70,28 @@
 
         <div class="balance">
             <span class="balance-label">Ваш баланс:</span>
-            <span class="balance-value">1 000 ₽</span>
+            <span class="balance-value"><span id="balance-value">{{ balance }}</span> ₽</span>
         </div>
 
         <a class="logout" href="/logout">Выйти</a>
     </div>
+
+    <script>
+    async function updateBalance() {
+        try {
+            const res = await fetch('/api/balance');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.result) {
+                document.getElementById('balance-value').textContent = data.balance;
+            }
+        } catch (e) {
+            // тихо игнорируем ошибки сети
+        }
+    }
+
+    // Обновляем баланс каждые 5 секунд без перезагрузки страницы
+    setInterval(updateBalance, 5000);
+    </script>
 </body>
 </html>

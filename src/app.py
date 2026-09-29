@@ -127,6 +127,27 @@ def user_login():
         if cnx and cnx.is_connected():
             cnx.close()
 
+@app.route("/api/balance")
+def api_balance():
+    if "user_id" not in session:
+        return jsonify({"result": False, "error": "Не авторизован"}), 401
+
+    cnx = None
+    cur = None
+    try:
+        cnx = mysql.connector.connect(**DB_CONFIG)
+        cur = cnx.cursor()
+        cur.execute("SELECT `balance` FROM `users` WHERE `id` = %s", (session["user_id"],))
+        row = cur.fetchone()
+        return jsonify({"result": True, "balance": row[0] if row else 0})
+    except mysql.connector.Error as e:
+        return jsonify({"result": False, "error": str(e)}), 500
+    finally:
+        if cur:
+            cur.close()
+        if cnx and cnx.is_connected():
+            cnx.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
